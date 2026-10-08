@@ -1,0 +1,40 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Supertweet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>
+  :root { color-scheme: light dark; --fg:#141B26; --bg:#fff; --mut:#56607a; --line:#dde2ea; --accent:#2F45C4; }
+  @media (prefers-color-scheme: dark) { :root { --fg:#EEF1F5; --bg:#1c2433; --mut:#9aa5b8; --line:#2c3547; --accent:#6f80f0; } }
+  body { margin: 0; width: 300px; font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--fg); background: var(--bg); }
+  main { padding: 14px; }
+  header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  header img { width: 26px; height: 26px; }
+  header b { font-size: 15px; }
+  .card { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; }
+  .status { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #9ca3af; flex: none; }
+  .dot.ok { background: #16a34a; } .dot.bad { background: #dc2626; }
+  .muted { color: var(--mut); font-size: 12px; margin-top: 4px; }
+  .btn { display: block; text-align: center; margin-top: 10px; background: var(--accent); color: #fff; border-radius: 999px; padding: 8px; font-weight: 700; text-decoration: none; }
+  details { margin-top: 6px; } summary { cursor: pointer; color: var(--mut); }
+  label { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 8px 0 0; }
+  input { font: inherit; width: 170px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: inherit; }
+  a.link { color: var(--accent); }
+  .qi { border-top: 1px solid var(--line); padding: 6px 0; font-size: 12px; } .qi:first-child { border-top: 0; }
+  .qi .t { white-space: pre-wrap; max-height: 4.5em; overflow: hidden; } .qi button { font: inherit; font-size: 11px; margin: 4px 4px 0 0; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: inherit; padding: 2px 8px; cursor: pointer; }
+</style></head>
+<body><main>
+  <header><img src="icons/extension-icon-48.png" alt=""><b>Supertweet</b></header>
+  <div class="card">
+    <div class="status"><span id="dot" class="dot"></span><span id="status">Checking…</span></div>
+    <div id="detail" class="muted"></div>
+    <a id="open" class="btn" href="https://supertweet-plum.vercel.app" target="_blank" hidden>Open Supertweet to link</a>
+  </div>
+  <div class="card muted">Grades your X and LinkedIn drafts with the Developer Trust filter when you press Grade. Post unlocks at 8.0 or above with no open privacy questions; a typed reason can get past a low score or a kill, never privacy blocks, engagement bait or placeholders.</div>
+  <div class="card" id="queueCard" hidden><b>Queued drafts</b><div id="queue"></div></div>
+  <details><summary>Advanced</summary>
+    <label>LinkedIn slug <input id="linkedinMe" type="text" placeholder="linkedin.com/in/…"></label>
+<label>Your other X handles <input id="myHandles" type="text" placeholder="@team, @company"></label>
+    <label>Grader <input id="backendUrl" type="text"></label>
+    <div class="muted"><a class="link" href="options.html" target="_blank">Objectives and private terms</a> · <span id="saved"></span></div>
+  </details>
+</main><script src="src/settings.js"></script><script src="popup.js"></script></body></html>

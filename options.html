@@ -1,0 +1,42 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Supertweet options</title>
+<style>
+  :root { color-scheme: light dark; --fg:#141B26; --bg:#EEF1F5; --card:#fff; --mut:#56607a; --line:#dde2ea; --accent:#2F45C4; }
+  @media (prefers-color-scheme: dark) { :root { --fg:#EEF1F5; --bg:#141B26; --card:#1c2433; --mut:#9aa5b8; --line:#2c3547; --accent:#6f80f0; } }
+  body { margin: 0; font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--fg); background: var(--bg); }
+  main { max-width: 960px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 22px; margin: 0 0 16px; } h2 { font-size: 17px; margin: 0 0 4px; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+  p { color: var(--mut); margin: 0 0 12px; }
+  textarea { width: 100%; font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: transparent; color: inherit; box-sizing: border-box; }
+  #json { min-height: 55vh; } #private { min-height: 90px; font-family: inherit; font-size: 14px; }
+  .bar { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; align-items: center; }
+  button { font: inherit; font-weight: 600; border-radius: 999px; padding: 6px 14px; border: 1px solid var(--line); background: transparent; color: inherit; cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .errors { color: #c0262d; white-space: pre-wrap; font-size: 13px; } .status { color: var(--mut); }
+  .obj { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-top: 8px; } .obj b { display: block; }
+</style></head>
+<body><main>
+  <h1>Supertweet options</h1>
+  <section>
+    <h2>Objectives</h2>
+    <p>Who you write for. The score is the Developer Trust filter; these objectives tell the grader who's reading (the "Serving" select in the panel). Changes apply to open tabs right away.</p>
+    <div id="summary"></div>
+    <details><summary>Edit as JSON</summary>
+      <textarea id="json" spellcheck="false"></textarea>
+      <div class="bar"><button class="primary" id="save" type="button">Validate and save</button><button id="reset" type="button">Reset to the bundled file</button><span class="status" id="status"></span></div>
+      <div class="errors" id="errors"></div>
+    </details>
+  </section>
+  <section>
+    <h2>Private terms</h2>
+    <p>Words that must never be posted: names, projects, places. Kept only in this browser. Never sent to the grader: they're matched on your device and masked before any grading call. A draft containing one can't be posted until you remove it.</p>
+    <textarea id="private" placeholder="One per line or comma-separated"></textarea>
+    <div class="bar"><button class="primary" id="savePrivate" type="button">Save private terms</button><span class="status" id="privateStatus"></span></div>
+  </section>
+  <section>
+    <h2>X algorithm</h2>
+    <p>X's ranking weights sync weekly from xai-org/x-algorithm. The algorithm fit is an info line only; it never blocks a post.</p>
+    <div class="bar"><button id="syncNow" type="button">Check for changes now</button><span class="status" id="syncStatus"></span></div>
+  </section>
+</main><script src="src/objectives.js"></script><script src="options.js"></script></body></html>

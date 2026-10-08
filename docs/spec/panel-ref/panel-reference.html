@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Supertweet score panel: reference implementation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<!--
+  REFERENCE IMPLEMENTATION OF THE SCORE PANEL.
+  Port this markup, CSS and render logic as-is into the extension and the web app.
+  Do not redesign it. The only input is a PanelState object (see the typedef below),
+  which the grader + local checks produce. Everything on screen is derived from it.
+-->
+<style>
+:root{
+  --st-bg:#0F141B;--st-surf:#171E28;--st-line:#2A3442;--st-text:#E8EDF3;--st-muted:#A3AFBF;
+  --st-link:#9AA8F5;--st-btn:#3D55D6;--st-mint:#3FD8A0;--st-amber:#E3A848;--st-red:#EF7A71;--st-bar:#9AA8F5;
+  --st-font:"Bricolage Grotesque","Helvetica Neue",system-ui,sans-serif;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --st-bg:#FFFFFF;--st-surf:#F3F5F8;--st-line:#D9DFE7;--st-text:#141B26;--st-muted:#556173;--st-link:#2F45C4;--st-btn:#2F45C4;--st-mint:#1F8A62;--st-amber:#9A6210;--st-red:#B83A3A;--st-bar:#2F45C4}}
+:root[data-theme="light"]{--st-bg:#FFFFFF;--st-surf:#F3F5F8;--st-line:#D9DFE7;--st-text:#141B26;--st-muted:#556173;--st-link:#2F45C4;--st-btn:#2F45C4;--st-mint:#1F8A62;--st-amber:#9A6210;--st-red:#B83A3A;--st-bar:#2F45C4}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:#0A0E13;font-family:var(--st-font);color:var(--st-text)}
+.demo{display:flex;gap:40px;flex-wrap:wrap;padding:32px 20px;justify-content:center}
+.demo h2{font-size:14px;color:#8A96A8;font-weight:600;margin:0 0 10px}
+
+/* ---------- the component ---------- */
+.st-panel{width:100%;max-width:440px;min-height:640px;background:var(--st-bg);color:var(--st-text);font-family:var(--st-font);
+  display:flex;flex-direction:column;border:1px solid var(--st-line);border-radius:16px;overflow:hidden}
+.st-head{display:flex;align-items:center;gap:10px;padding:14px 16px 14px 20px;border-bottom:1px solid var(--st-line)}
+.st-head img{width:28px;height:28px}
+.st-head b{font-size:19px;font-weight:800}
+.st-iconbtn{margin-left:auto;width:44px;height:44px;border:0;background:none;color:var(--st-muted);display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:10px}
+.st-body{flex:1;padding:20px;display:flex;flex-direction:column;gap:18px}
+.st-obj{display:flex;align-items:center;gap:10px}
+.st-obj span{font-size:13px;color:var(--st-muted)}
+.st-obj select{font:inherit;font-size:15px;font-weight:600;color:var(--st-text);background:var(--st-surf);border:1px solid var(--st-line);border-radius:999px;padding:8px 14px;min-height:40px;cursor:pointer}
+.st-obj.off select{color:var(--st-amber);border-color:var(--st-amber)}
+.st-score{display:flex;align-items:flex-end;gap:10px}
+.st-score .n{font-size:72px;line-height:.9;font-weight:800;font-variant-numeric:tabular-nums}
+.st-score .of{font-size:20px;color:var(--st-muted);padding-bottom:6px}
+.st-pill{margin-left:auto;margin-bottom:8px;font-size:13px;font-weight:700;border:1.5px solid currentColor;border-radius:999px;padding:4px 12px;white-space:nowrap}
+.st-bars{display:flex;flex-direction:column;gap:10px}
+.st-bar{display:grid;grid-template-columns:92px 1fr 70px;align-items:center;gap:12px;font-size:14px}
+.st-bar .t{height:8px;border-radius:4px;background:var(--st-line);overflow:hidden}
+.st-bar .t i{display:block;height:100%;background:var(--st-bar)}
+.st-bar .v{color:var(--st-muted);text-align:right;font-variant-numeric:tabular-nums}
+.st-bar .v em{font-style:normal;color:var(--st-red);font-weight:600}
+.st-card{background:var(--st-surf);border:1px solid var(--st-line);border-radius:14px;padding:6px 16px 4px}
+.st-card .h{display:flex;align-items:baseline;padding:10px 0 8px}
+.st-card .h b{font-size:17px;font-weight:800}
+.st-card .h span{margin-left:auto;font-size:13px;color:var(--st-muted)}
+.st-step{display:flex;flex-direction:column;gap:8px;padding:14px 0;border-top:1px solid var(--st-line)}
+.st-step.done{opacity:.55}
+.st-step .r{display:flex;align-items:baseline;gap:10px}
+.st-step .r b{font-size:16px}
+.st-step .r span{margin-left:auto;font-size:15px;font-weight:700;color:var(--st-mint)}
+.st-step p{margin:0;font-size:14px;color:var(--st-muted);line-height:1.45}
+.st-step label{font-size:13px;color:var(--st-muted)}
+.st-step input{font:inherit;font-size:15px;color:var(--st-text);background:var(--st-bg);border:1px solid var(--st-line);border-radius:10px;padding:10px 12px;min-height:44px;width:100%}
+.st-diff{font-size:14px;line-height:1.5;background:var(--st-bg);border-radius:10px;padding:10px 12px;white-space:pre-wrap}
+.st-diff .was{color:var(--st-muted);text-decoration:line-through}
+.st-diff .lbl{display:block;font-size:12px;color:var(--st-muted);margin-top:4px}
+.st-diff mark{background:none;color:var(--st-amber);font-weight:600}
+.st-act{align-self:flex-start;font:inherit;font-size:14px;font-weight:600;color:var(--st-text);background:var(--st-bg);border:1px solid var(--st-line);border-radius:10px;padding:10px 14px;min-height:44px;display:flex;align-items:center;gap:8px;cursor:pointer}
+.st-act:disabled{opacity:.45;cursor:not-allowed}
+.st-warn{font-size:13px;color:var(--st-amber)}
+.st-safe{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--st-muted)}
+.st-flag{border:1.5px solid var(--st-amber);border-radius:12px;padding:12px 14px;font-size:14px}
+.st-algo{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--st-muted);border-top:1px solid var(--st-line);padding-top:6px}
+.st-algo button{margin-left:auto;font:inherit;font-size:13px;color:var(--st-link);background:none;border:0;min-height:44px;cursor:pointer}
+.st-foot{padding:16px 20px 20px;border-top:1px solid var(--st-line);display:flex;flex-direction:column;gap:10px;align-items:center}
+.st-post{width:100%;min-height:52px;border:0;border-radius:12px;background:var(--st-btn);color:#fff;font:inherit;font-size:17px;font-weight:700;cursor:pointer}
+.st-post:disabled{background:var(--st-surf);color:var(--st-muted);border:1px solid var(--st-line);cursor:not-allowed}
+.st-foot a{font-size:13px;color:var(--st-link)}
+.st-iconbtn:focus-visible,.st-act:focus-visible,.st-post:focus-visible,.st-obj select:focus-visible,.st-algo button:focus-visible,.st-step input:focus-visible{outline:2px solid var(--st-link);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="demo">
+  <div><h2>Fixture: your web-app draft (locked)</h2><div id="a"></div></div>
+  <div><h2>Fixture: ready</h2><div id="b"></div></div>
+</div>
+<script>
+/**
+ * @typedef {Object} PanelState
+ * @property {string} platform                 "x" | "linkedin"
+ * @property {{id:string,label:string}[]} objectives
+ * @property {string|null} objectiveId          null = off-objective
+ * @property {number} score                     0-10, one decimal
+ * @property {number} gate                      8.0; ready only when score >= gate and no open flags
+ * @property {{proof:number,audience:number,onlyMe:number}} rubric   /4, /3, /3
+ * @property {Step[]} steps                     max 3, ranked by points, only when locked
+ * @property {{id:string,question:string}[]} flags   open TMI / lawyer questions
+ * @property {number} algorithmFit              X only, info only
+ * @property {string} draft                     exact draft text, line breaks preserved
+ * @property {number} charLimit                 280 for X
+ * @property {string[]} attachments
+ *
+ * @typedef {Object} Step
+ * @property {"attach_proof"|"ask_fact"|"line_edit"} type
+ * @property {string} title
+ * @property {string} why
+ * @property {number} points
+ * @property {string=} attachLabel              attach_proof
+ * @property {string=} question                 ask_fact: label for the input
+ * @property {string=} placeholderExample       ask_fact: input placeholder, e.g. "e.g. 31"
+ * @property {string=} lineBefore               ask_fact / line_edit: the exact existing line
+ * @property {string=} lineAfter                ask_fact: use {answer} where the user's input goes
+ * @property {boolean=} done
+ */
+const MARK='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><path d="M36 10 H92 A26 26 0 0 1 118 36 V76 A26 26 0 0 1 92 102 H56 L30 122 L33 102 A26 26 0 0 1 10 76 V36 A26 26 0 0 1 36 10 Z" fill="#2F45C4"/><path d="M44.9 77.1 A27 27 0 1 1 90.3 51.8" fill="none" stroke="#3FD8A0" stroke-width="10" stroke-linecap="round"/><circle cx="64" cy="58" r="7" fill="#fff"/></svg>');
+const ICON={
+ close:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>',
+ image:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 17l-5-5-8 8"/></svg>',
+ check:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>'
+};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const xLen=s=>[...s.replace(/https?:\/\/\S+/g,'x'.repeat(23))].length;
+const ready=st=>st.score>=st.gate&&!st.flags.length&&st.objectiveId!==null;
+
+function blocker(st){
+  if(st.flags.length) return `Answer ${st.flags.length} privacy question${st.flags.length>1?'s':''}`;
+  if(st.objectiveId===null) return 'Doesn\'t serve an objective';
+  const s=st.steps.find(x=>!x.done);
+  if(s&&s.type==='attach_proof') return 'Add proof to post';
+  return `${st.score.toFixed(1)} / 10, needs ${st.gate}+`;
+}
+
+/** Renders the panel into el. onChange(newState) is called after any user action. */
+function renderPanel(el,st,onChange){
+  const isReady=ready(st);
+  const color=isReady?'var(--st-mint)':'var(--st-amber)';
+  const open=st.steps.filter(s=>!s.done);
+  const gain=open.reduce((a,s)=>a+s.points,0);
+  const bar=(label,v,m)=>`<div class="st-bar"><span>${label}</span><div class="t"><i style="width:${v/m*100}%"></i></div><span class="v">${v}/${m}${v===0?' <em>none</em>':''}</span></div>`;
+  const step=(s,i)=>{
+    let body='';
+    if(s.type==='attach_proof') body=`<button class="st-act" data-act="attach" data-i="${i}" ${s.done?'disabled':''}>${ICON.image}${esc(s.done?'Attached':s.attachLabel||'Attach')}</button>`;
+    if(s.type==='ask_fact'){
+      const id=`st-q-${i}`, ans=s.answer||'';
+      const after=s.lineAfter.replace('{answer}',ans?`<mark>${esc(ans)}</mark>`:'<mark>…</mark>');
+      const plain=s.lineAfter.replace('{answer}',ans);
+      const over=xLen(st.draft.replace(s.lineBefore,plain))-st.charLimit;
+      body=`<label for="${id}">${esc(s.question)}</label><input id="${id}" data-i="${i}" value="${esc(ans)}" placeholder="${esc(s.placeholderExample||'')}">
+        <div class="st-diff"><span class="was">${esc(s.lineBefore)}</span><span class="lbl">becomes</span>${after}</div>
+        ${over>0?`<span class="st-warn">${over} characters over. Shorten before applying.</span>`:''}
+        <button class="st-act" data-act="apply" data-i="${i}" ${!ans||over>0||s.done?'disabled':''}>${s.done?'Applied':'Apply edit'}</button>`;
+    }
+    if(s.type==='line_edit'){
+      const over=xLen(st.draft.replace(s.lineBefore,s.lineAfter))-st.charLimit;
+      body=`<div class="st-diff"><span class="was">${esc(s.lineBefore)}</span><span class="lbl">becomes</span>${esc(s.lineAfter)}</div>
+        ${over>0?`<span class="st-warn">${over} characters over.</span>`:''}
+        <button class="st-act" data-act="apply" data-i="${i}" ${over>0||s.done?'disabled':''}>${s.done?'Applied':'Apply edit'}</button>`;
+    }
+    return `<div class="st-step${s.done?' done':''}"><div class="r"><b>${esc(s.title)}</b><span>+${s.points.toFixed(1)}</span></div><p>${esc(s.why)}</p>${body}</div>`;
+  };
+  el.innerHTML=`<section class="st-panel" aria-label="Supertweet score">
+    <div class="st-head"><img src="${MARK}" alt=""><b>Supertweet</b><button class="st-iconbtn" aria-label="Close panel">${ICON.close}</button></div>
+    <div class="st-body">
+      <div class="st-obj${st.objectiveId===null?' off':''}"><span>Serving</span>
+        <select aria-label="Objective">${st.objectiveId===null?'<option selected>Nothing</option>':''}${st.objectives.map(o=>`<option value="${o.id}" ${o.id===st.objectiveId?'selected':''}>${esc(o.label)}</option>`).join('')}</select></div>
+      <div class="st-score"><span class="n" style="color:${color}">${st.score.toFixed(1)}</span><span class="of">/10</span>
+        <span class="st-pill" style="color:${color}">${isReady?'Ready':`Locked · needs ${st.gate}+`}</span></div>
+      <div class="st-bars">${bar('Proof',st.rubric.proof,4)}${bar('Audience',st.rubric.audience,3)}${bar('Only me',st.rubric.onlyMe,3)}</div>
+      ${st.flags.length?st.flags.map(f=>`<div class="st-flag">${esc(f.question)}</div>`).join(''):''}
+      ${!isReady&&st.steps.length?`<div class="st-card"><div class="h"><b>Get to ${st.gate}</b><span>${open.length} step${open.length===1?'':'s'}, +${gain.toFixed(1)}</span></div>${st.steps.map(step).join('')}</div>`:''}
+      ${st.flags.length?'':`<div class="st-safe" style="color:var(--st-muted)"><span style="color:var(--st-mint)">${ICON.check}</span>No privacy or legal flags</div>`}
+      ${st.platform==='x'?`<div class="st-algo"><span>X algorithm ${st.algorithmFit.toFixed(1)} · info only, not scored</span><button>Details</button></div>`:''}
+    </div>
+    <div class="st-foot">
+      <button class="st-post" ${isReady?'':'disabled'}>${isReady?(st.platform==='x'?'Post to X':'Post to LinkedIn'):esc(blocker(st))}</button>
+      ${isReady?'<span style="font-size:13px;color:var(--st-muted)">Passes the gate. Nothing flagged.</span>':'<a href="#override">Post anyway, with a reason</a>'}
+    </div></section>`;
+  // events (in the real build: attach opens the composer's native media picker; apply edits the draft, then re-grades)
+  el.querySelectorAll('[data-act="attach"]').forEach(b=>b.onclick=()=>{const s=st.steps[+b.dataset.i];s.done=true;st.attachments.push('screenshot');st.rubric.proof=Math.min(4,st.rubric.proof+s.points);recompute(st);onChange(st)});
+  el.querySelectorAll('input[data-i]').forEach(inp=>inp.oninput=()=>{const s=st.steps[+inp.dataset.i];s.answer=inp.value.trim();const pos=inp.selectionStart;renderPanel(el,st,onChange);const n=el.querySelector(`#st-q-${inp.dataset.i}`);n.focus();n.setSelectionRange(pos,pos)});
+  el.querySelectorAll('[data-act="apply"]').forEach(b=>b.onclick=()=>{const s=st.steps[+b.dataset.i];const after=s.type==='ask_fact'?s.lineAfter.replace('{answer}',s.answer):s.lineAfter;st.draft=st.draft.replace(s.lineBefore,after);s.done=true;st.rubric[s.rubricKey]+=s.points;recompute(st);onChange(st)});
+}
+function recompute(st){st.score=st.rubric.proof+st.rubric.audience+st.rubric.onlyMe}
+
+const OBJ=[{id:'agent-builder',label:'Hands-on agent builder'},{id:'ecosystem-leader',label:'Ecosystem leader who measures'},{id:'agents-change-devrel',label:'How agents change DevRel'}];
+const DRAFT=`Letting AI write everything isn't great.
+
+So I built a real-time linter that grades my drafts against a fixed set of objectives while I type. It flags what's missing, and I fix it myself.
+
+The human corrects; the AI doesn't produce it all.`;
+const A={platform:'x',objectives:OBJ,objectiveId:'agent-builder',score:5,gate:8,rubric:{proof:2,audience:1,onlyMe:2},flags:[],algorithmFit:.5,draft:DRAFT,charLimit:280,attachments:[],
+ steps:[
+  {type:'attach_proof',rubricKey:'proof',title:'Show the thing',why:'A screenshot of the linter grading this exact draft is the proof. It also costs no characters.',points:2,attachLabel:'Attach screenshot'},
+  {type:'ask_fact',rubricKey:'onlyMe',title:'Add a real-run number',why:'Only you know how many drafts it has flagged. That number is what makes it yours.',points:1,question:'How many drafts has it flagged so far?',placeholderExample:'e.g. 31',lineBefore:"It flags what's missing, and I fix it myself.",lineAfter:"It's flagged {answer} drafts so far. I fix each one myself."},
+  {type:'line_edit',rubricKey:'audience',title:'Say who it\'s for',why:'Speak to builders directly, and save characters doing it.',points:1,lineBefore:"The human corrects; the AI doesn't produce it all.",lineAfter:"Builders: you write, the AI checks."}
+ ]};
+const B=JSON.parse(JSON.stringify(A)); B.score=9; B.rubric={proof:4,audience:2,onlyMe:3}; B.steps=[]; B.algorithmFit=6.1;
+const rerender=(id,st)=>renderPanel(document.getElementById(id),st,s=>rerender(id,s));
+rerender('a',A); rerender('b',B);
+</script>
+</body>
+</html>

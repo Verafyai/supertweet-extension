@@ -1,0 +1,124 @@
+{
+  "manifest_version": 3,
+  "name": "Supertweet",
+  "version": "1.0.0",
+  "description": "Grades every X and LinkedIn draft with the Developer Trust filter before it goes live, with privacy checks, and posts only from its own panel.",
+  "permissions": [
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://x.com/*",
+    "https://twitter.com/*",
+    "https://mobile.twitter.com/*",
+    "https://mobile.x.com/*",
+    "https://www.linkedin.com/*",
+    "http://127.0.0.1/*",
+    "http://localhost/*",
+    "https://supertweet-plum.vercel.app/*",
+    "https://github.com/xai-org/*",
+    "https://raw.githubusercontent.com/xai-org/*"
+  ],
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Supertweet",
+    "default_icon": {
+      "16": "icons/extension-icon-16.png",
+      "32": "icons/extension-icon-32.png",
+      "48": "icons/extension-icon-48.png",
+      "128": "icons/extension-icon-128.png"
+    }
+  },
+  "options_page": "options.html",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://x.com/*",
+        "https://twitter.com/*",
+        "https://mobile.twitter.com/*",
+        "https://mobile.x.com/*"
+      ],
+      "js": [
+        "src/scorer.js",
+        "src/checks.js",
+        "src/tmi.js",
+        "src/objectives.js",
+        "src/x-linter.js",
+        "src/settings.js",
+        "src/steps.js",
+        "src/critique.js",
+        "src/panel.js",
+        "src/ui.js",
+        "src/adapters/x.js",
+        "src/adapters/linkedin.selectors.js",
+        "src/adapters/linkedin.js",
+        "src/platform.js",
+        "src/audience.js",
+        "src/content.js",
+        "src/history.js",
+        "src/past-posts.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.linkedin.com/*"
+      ],
+      "js": [
+        "src/scorer.js",
+        "src/checks.js",
+        "src/tmi.js",
+        "src/objectives.js",
+        "src/x-linter.js",
+        "src/settings.js",
+        "src/steps.js",
+        "src/critique.js",
+        "src/panel.js",
+        "src/ui.js",
+        "src/adapters/x.js",
+        "src/adapters/linkedin.selectors.js",
+        "src/adapters/linkedin.js",
+        "src/platform.js",
+        "src/audience.js",
+        "src/content.js",
+        "src/past-posts.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://supertweet-plum.vercel.app/*"
+      ],
+      "js": [
+        "src/link.js"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://supertweet-plum.vercel.app https://github.com https://raw.githubusercontent.com https://*.githubusercontent.com http://127.0.0.1:* http://localhost:*"
+  },
+  "icons": {
+    "16": "icons/extension-icon-16.png",
+    "32": "icons/extension-icon-32.png",
+    "48": "icons/extension-icon-48.png",
+    "128": "icons/extension-icon-128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "fonts/*.woff2"
+      ],
+      "matches": [
+        "https://x.com/*",
+        "https://twitter.com/*",
+        "https://mobile.twitter.com/*",
+        "https://mobile.x.com/*",
+        "https://www.linkedin.com/*"
+      ]
+    }
+  ]
+}

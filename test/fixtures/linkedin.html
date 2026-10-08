@@ -1,0 +1,82 @@
+<!doctype html>
+<html data-supertweet-platform="linkedin"><head><meta charset="utf-8"><title>LinkedIn fixture</title>
+<style>
+  body { font: 14px system-ui; margin: 40px; background: #f4f2ee; }
+  .share-box, .article-editor, .feed { width: 560px; background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 12px; }
+  [contenteditable] { min-height: 80px; border: 1px solid #ccc; padding: 8px; outline: none; }
+  button { margin-top: 8px; padding: 6px 16px; border-radius: 999px; background: #0a66c2; color: #fff; border: 0; }
+  .feed-shared-update-v2 { border-bottom: 1px solid #eee; padding: 8px 0; }
+</style></head>
+<body>
+<pre id="log"></pre>
+<script>
+// Mock of the LinkedIn DOM Supertweet reads, routed by path like the real site.
+const path = location.pathname;
+const log = (s) => (document.getElementById('log').textContent += s + '\n');
+const SHARE = `<div role="dialog" class="artdeco-modal share-box">
+  <div class="share-creation-state__text-editor"><div class="ql-editor" contenteditable="true" role="textbox" aria-label="Text editor for creating content"></div></div>
+  <div class="share-box-footer"><button class="share-actions__primary-action artdeco-button artdeco-button--primary" type="button">Post</button></div>
+</div>`;
+const COMMENT = `<div class="feed"><div class="feed-shared-update-v2" data-urn="urn:li:activity:2001"><div class="update-components-text">Someone else's post</div>
+  <form class="comments-comment-box__form"><div class="comments-comment-texteditor"><div class="ql-editor" contenteditable="true" role="textbox" aria-label="Add a comment"></div></div>
+  <button class="comments-comment-box__submit-button artdeco-button" type="submit">Comment</button></form></div></div>`;
+if (path.startsWith('/feed')) {
+  // The share modal mounts late, like the real one after "Start a post".
+  setTimeout(() => document.body.insertAdjacentHTML('beforeend', SHARE), 600);
+} else if (path.startsWith('/comments')) {
+  document.body.insertAdjacentHTML('beforeend', COMMENT);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && e.target.closest('.comments-comment-box__form')) log('SENT:EnterComment'); });
+  document.addEventListener('submit', (e) => { e.preventDefault(); log('SENT:Submit'); });
+} else if (path.startsWith('/article')) {
+  document.body.insertAdjacentHTML('beforeend', `<div class="article-editor">
+    <textarea class="article-editor-headline__textarea" placeholder="Title"></textarea>
+    <div class="article-editor-content"><div contenteditable="true" role="textbox"></div></div>
+    <div class="article-editor-nav"><button class="artdeco-button artdeco-button--primary" type="button">Next</button></div>
+  </div>`);
+} else if (path.startsWith('/in/')) {
+  const post = (urn, who, text) => `<div class="feed-shared-update-v2" data-urn="urn:li:activity:${urn}">
+    <div class="update-components-actor__container"><a class="update-components-actor__meta-link" href="https://www.linkedin.com/in/${who}?miniProfileUrn=x">${who}</a></div>
+    <div class="update-components-text"><span dir="ltr">${text}</span></div></div>`;
+  document.body.insertAdjacentHTML('beforeend', `<div class="feed">
+    ${post('1001', 'demo_dev', 'Scale motion vs pipeline motion: two DevRel jobs, two metrics. We tracked first-attempt success across 40 quickstarts.')}
+    ${post('1002', 'someone-else', 'A repost of someone else. MEH')}
+    ${post('1003', 'demo_dev', 'MEH post about community being everything. PMMISH')}
+  </div>`);
+}
+// Clicks on the real buttons "send" and, like LinkedIn, clear the composer.
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (b && /^(Post|Next|Comment)$/.test(b.textContent.trim())) {
+    log(`SENT:${b.textContent.trim()}`);
+    if (!window.__failNextPost) { const ed = (b.closest('[role=dialog], form, .article-editor') || document).querySelector('[contenteditable]'); if (ed) ed.textContent = ''; }
+  }
+});
+// Test hooks: simulate React re-mounting the Post button, and React stripping attributes.
+window.__rerenderButton = () => {
+  const b = document.querySelector('.share-actions__primary-action');
+  b.replaceWith(Object.assign(document.createElement('button'), { className: b.className, type: 'button', textContent: 'Post' }));
+};
+window.__stripLock = () => {
+  const b = document.querySelector('.share-actions__primary-action');
+  b.removeAttribute('disabled'); b.removeAttribute('aria-disabled');
+};
+</script>
+<script src="/test/fixtures/chrome-stub.js"></script>
+<script src="/src/scorer.js"></script>
+<script src="/src/checks.js"></script>
+<script src="/src/tmi.js"></script>
+<script src="/src/objectives.js"></script>
+<script src="/src/x-linter.js"></script>
+<script src="/src/settings.js"></script>
+<script src="/src/steps.js"></script>
+<script src="/src/critique.js"></script>
+<script src="/src/panel.js"></script>
+<script src="/src/ui.js"></script>
+<script src="/src/adapters/x.js"></script>
+<script src="/src/adapters/linkedin.selectors.js"></script>
+<script src="/src/adapters/linkedin.js"></script>
+<script src="/src/platform.js"></script>
+<script src="/src/audience.js"></script>
+<script src="/src/content.js"></script>
+<script src="/src/past-posts.js"></script>
+</body></html>

@@ -1,0 +1,19 @@
+.DS_Store
+node_modules/
+*.zip
+*.crx
+*.pem
+
+# Private: never commit or bundle
+audience-profiles.json
+config/audience-profiles.json
+**/audience-profiles.json
+server/node_modules/
+dist/
+updates.zip
+web/dist/
+supertweet-brand.zip
+.vercel/
+.env*
+.vercel
+*.zip

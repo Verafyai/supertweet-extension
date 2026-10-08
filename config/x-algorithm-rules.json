@@ -1,0 +1,340 @@
+{
+  "source": "https://github.com/xai-org/x-algorithm/blob/main/home-mixer/params/param.rs",
+  "raw_source": "https://github.com/xai-org/x-algorithm/raw/refs/heads/main/home-mixer/params/param.rs",
+  "synced_from_production": "2026-08-12T04:09:22Z",
+  "pulled": "2026-10-04",
+  "how_weights_work": "Final score = sum(weight x predicted probability of the viewer taking that action). Weights scale per-viewer predicted probabilities, not raw counts. The linter can say which actions a post invites; it cannot compute rank.",
+  "action_weights": {
+    "ShareViaCopyLinkWeight": 20.0,
+    "BidirectionalFollowReplyWeightBoost": 15.0,
+    "ReplyWeight": 5.0,
+    "QuoteWeight": 5.0,
+    "ShareViaDmWeight": 5.0,
+    "FollowAuthorWeight": 4.0,
+    "ShareWeight": 2.0,
+    "RetweetWeight": 1.0,
+    "FavoriteWeight": 0.5,
+    "ClickWeight": 0.4,
+    "OpenLinkWeight": 0.2,
+    "PhotoExpandWeight": 0.05,
+    "VideoOpenWeight": 0.05,
+    "VqvWeight": 0.05,
+    "ContDwellTimeWeight": 0.004,
+    "ProfileClickWeight": 0.0,
+    "DwellWeight": 0.0,
+    "NotDwelledWeight": -0.02,
+    "BlockAuthorWeight": -31.2,
+    "NotInterestedWeight": -43.2,
+    "MuteAuthorWeight": -58.8,
+    "ReportWeight": -234.0
+  },
+  "distribution_params": {
+    "AuthorDiversityDecay": 0.5,
+    "AuthorDiversityFloor": 0.25,
+    "OonWeightFactor": 0.75,
+    "TopicOonWeightFactor": 0.5,
+    "ColdStartImpressionThreshold": 1000,
+    "ColdStartFollowerCap": 1000,
+    "ColdStartMaxPostAgeSecs": 86400,
+    "MinVideoDurationMs": 10000,
+    "VMRankerDppTheta": 0.65,
+    "AgeFilterHours": 48
+  },
+  "rules": [
+    {
+      "id": "shareable",
+      "group": "hit",
+      "weights": [
+        "ShareViaCopyLinkWeight",
+        "ShareViaDmWeight",
+        "ShareWeight"
+      ],
+      "check": "Contains something worth sending to a colleague: a number, steps, a test, a template, or a repo.",
+      "fix": "Add the one concrete artifact: the number, the test, or the link to what you built."
+    },
+    {
+      "id": "reply",
+      "group": "hit",
+      "weights": [
+        "ReplyWeight",
+        "BidirectionalFollowReplyWeightBoost"
+      ],
+      "check": "Ends on a real question or an answerable claim. Replies from mutual follows get a +15 boost.",
+      "fix": "End with the question you actually want answered by people who do this work."
+    },
+    {
+      "id": "quote",
+      "group": "hit",
+      "weights": [
+        "QuoteWeight"
+      ],
+      "check": "Has one standalone, quotable claim under 120 characters.",
+      "fix": "Lead with the claim in one sentence people could quote with their own take."
+    },
+    {
+      "id": "follow",
+      "group": "hit",
+      "weights": [
+        "FollowAuthorWeight"
+      ],
+      "check": "Shows first-hand practice (I built, I ran, I tested) or belongs to a series.",
+      "fix": "Say what you did, not what people should do."
+    },
+    {
+      "id": "dwell",
+      "group": "hit",
+      "weights": [
+        "ContDwellTimeWeight"
+      ],
+      "check": "Enough substance to read: 120+ characters or an image.",
+      "fix": "Add one more concrete sentence, or a screenshot."
+    },
+    {
+      "id": "likes",
+      "group": "hit",
+      "weights": [
+        "FavoriteWeight",
+        "RetweetWeight"
+      ],
+      "check": "Info: likes (0.5) and reposts (1.0) are weak signals. Don't optimize for them.",
+      "fix": null
+    },
+    {
+      "id": "report",
+      "group": "avoid",
+      "weights": [
+        "ReportWeight"
+      ],
+      "check": "No engagement bait, giveaways, or hostility.",
+      "fix": "Cut the bait phrase."
+    },
+    {
+      "id": "mute",
+      "group": "avoid",
+      "weights": [
+        "MuteAuthorWeight",
+        "BlockAuthorWeight"
+      ],
+      "check": "At most 2 hashtags, 3 mentions, 4 emoji, 3 all-caps words.",
+      "fix": "Strip the decoration."
+    },
+    {
+      "id": "not-interested",
+      "group": "avoid",
+      "weights": [
+        "NotInterestedWeight"
+      ],
+      "check": "On-topic for your target personas, no hype phrasing.",
+      "fix": "Tie it to agents, AI dev, or DevRel, and drop the hype words."
+    },
+    {
+      "id": "link-only",
+      "group": "avoid",
+      "weights": [
+        "OpenLinkWeight"
+      ],
+      "check": "A link isn't the whole post. Link opens are worth 0.2; the post has to earn replies and shares on its own.",
+      "fix": "Put the finding in the post; the link is the receipt."
+    },
+    {
+      "id": "spacing",
+      "group": "distribution",
+      "params": [
+        "AuthorDiversityDecay",
+        "AuthorDiversityFloor"
+      ],
+      "check": "Your next post in a viewer's feed is multiplied by 0.5, then down to 0.25. Space posts out.",
+      "fix": "Wait, or merge into your earlier post."
+    },
+    {
+      "id": "similarity",
+      "group": "distribution",
+      "params": [
+        "VMRankerDppTheta"
+      ],
+      "check": "Not a near-duplicate of a recent post. The reranker spaces out similar posts.",
+      "fix": "Find a new angle or skip it."
+    },
+    {
+      "id": "original",
+      "group": "distribution",
+      "params": [
+        "OonWeightFactor"
+      ],
+      "check": "Originals travel further. Replies and reposts are discounted like out-of-network posts.",
+      "fix": "If it stands alone, post it as an original."
+    },
+    {
+      "id": "video",
+      "group": "distribution",
+      "params": [
+        "MinVideoDurationMs"
+      ],
+      "check": "Video is at least 10 seconds to count as a quality view.",
+      "fix": "Make the clip 10s or longer."
+    },
+    {
+      "id": "cold-start",
+      "group": "distribution",
+      "params": [
+        "ColdStartFollowerCap",
+        "ColdStartImpressionThreshold",
+        "ColdStartMaxPostAgeSecs"
+      ],
+      "check": "Info: accounts under 1,000 followers get a new-author boost on posts under 24h old with under 1,000 impressions.",
+      "fix": null
+    },
+    {
+      "id": "lifetime",
+      "group": "distribution",
+      "params": [
+        "AgeFilterHours"
+      ],
+      "check": "Info: posts older than 48 hours drop out of For You.",
+      "fix": null
+    }
+  ],
+  "not_in_code": [
+    "No hard link penalty appears in these weights. Claims of a 30-50% link penalty come from third-party blogs, not this file.",
+    "No bookmark weight and no Premium boost appear in this param file.",
+    "Grox spam/quality classifier prompts and some labeling rules are not published."
+  ],
+  "homework": {
+    "time_budget_minutes": 25,
+    "daily": [
+      {
+        "id": "replies",
+        "target": 5,
+        "task": "Write 5 substantive replies to posts from your target personas, ideally under 2 hours old.",
+        "why": "Replies weigh 5, and replies between mutual follows get +15 more. Good replies are how strangers become mutuals.",
+        "weights": [
+          "ReplyWeight",
+          "BidirectionalFollowReplyWeightBoost"
+        ],
+        "done_when": "5 replies of 15+ words each, to accounts on your persona lists"
+      },
+      {
+        "id": "reply-back",
+        "target": 1,
+        "task": "Answer everyone who replied to your posts in the last 24 hours.",
+        "why": "Turns repliers into mutuals, which unlocks the +15 mutual reply boost next time.",
+        "weights": [
+          "BidirectionalFollowReplyWeightBoost"
+        ],
+        "done_when": "No unanswered replies older than 24h"
+      },
+      {
+        "id": "original",
+        "target": 1,
+        "task": "Post one original that passes the gate (8+).",
+        "why": "Originals avoid the 0.75 discount applied to replies and reposts. One strong post beats three, since each extra post in a viewer's feed is halved.",
+        "params": [
+          "OonWeightFactor",
+          "AuthorDiversityDecay"
+        ],
+        "done_when": "1 original posted, max 3 per day, 3h apart"
+      },
+      {
+        "id": "follow",
+        "target": 3,
+        "task": "Follow 3 builders from your persona lists who engaged with you or whose work you replied to.",
+        "why": "Mutual follows are what the +15 reply boost keys on. Follow-graph edges also feed the account credibility score.",
+        "params": [
+          "BidirectionalFollowReplyWeightBoost",
+          "user-cred-v2"
+        ],
+        "done_when": "3 relevant follows"
+      }
+    ],
+    "weekly": [
+      {
+        "id": "artifact",
+        "target": 1,
+        "task": "Post one thing people would send to a colleague: a number, a test, a repo, or steps.",
+        "why": "Copy-link shares are the largest positive weight (20).",
+        "weights": [
+          "ShareViaCopyLinkWeight"
+        ]
+      },
+      {
+        "id": "clip",
+        "target": 1,
+        "task": "Post one native screenshot or a 10s+ clip of something you built.",
+        "why": "Native media adds dwell; video under 10s doesn't count as a quality view.",
+        "params": [
+          "MinVideoDurationMs"
+        ]
+      },
+      {
+        "id": "persona-review",
+        "target": 1,
+        "task": "Check which personas your week's posts actually reached and adjust next week's targets.",
+        "why": "'Not interested' (-43.2) comes from reaching the wrong people."
+      }
+    ],
+    "monthly": [
+      {
+        "id": "cadence",
+        "target": 10,
+        "task": "Post at least 10 times this month.",
+        "why": "Under the Hood stats require 10+ posts in the previous month."
+      },
+      {
+        "id": "labels",
+        "target": 1,
+        "task": "Check Under the Hood for labels on your account or posts.",
+        "url": "https://x.com/i/under_the_hood",
+        "why": "Labels drive visibility filtering, which can drop posts after ranking."
+      }
+    ],
+    "anti_homework": [
+      "No 'great post!' replies. Low-effort replies invite mutes (-58.8) and don't create mutuals.",
+      "No reply-guy volume. The replies cap is the target, not a floor to exceed.",
+      "Stop when the daily list is done. Scrolling past the time budget isn't homework."
+    ]
+  },
+  "algorithm_fit": {
+    "what": "Live 0-10 score of how well a draft invites what X's ranker rewards and avoids what it penalizes. Computed in the browser on every keystroke, no model call.",
+    "hit_weights_sqrt_scaled": {
+      "shareable": 5.196152422706632,
+      "reply": 4.47213595499958,
+      "quote": 2.23606797749979,
+      "follow": 2.0,
+      "dwell": 1.0
+    },
+    "hit_formula": "10 * sum(w_i * s_i) / sum(w_i), s = 1 pass, 0.5 warn, 0 fail. Weights are the summed param.rs weights per rule, square-root scaled so copy-link shares (20) can't drown out everything else.",
+    "penalties": {
+      "mute": [
+        3,
+        1
+      ],
+      "not-interested": [
+        3,
+        1
+      ],
+      "link-only": [
+        1,
+        1
+      ],
+      "spacing": [
+        2,
+        1
+      ],
+      "similarity": [
+        2,
+        1
+      ],
+      "video": [
+        1,
+        0
+      ],
+      "original": [
+        0,
+        1
+      ]
+    },
+    "penalty_note": "[fail, warn] points subtracted",
+    "report_cap": "Any bait/hostility fail caps fit at 1.0",
+    "caveat": "Fit says which actions a draft invites. It does not predict rank, since weights scale each viewer's own predicted probabilities."
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "supertweet-extension",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Supertweet: a Chrome/Brave extension that grades X and LinkedIn drafts with the Developer Trust filter before they go live, plus a local grader server.",
+  "scripts": {
+    "server": "node server/server.mjs",
+    "package": "scripts/package.sh",
+    "test": "scripts/test.sh",
+    "test:unit": "node --test test/*.test.js && cd server && node --test"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.131.0",
+    "zod": "^4.6.5"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

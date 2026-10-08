@@ -1,0 +1,85 @@
+{
+  "description": "Who you write for. The score is the Developer Trust filter (config/grader-prompt.md); these objectives tell the grader who's reading, and appear in the panel's \"Serving\" select. Edit them in the extension's options page. This file is an example: replace it with your own.",
+  "projects": [
+    "Supertweet"
+  ],
+  "objectives": [
+    {
+      "id": "ecosystem-leader",
+      "statement": "Build credibility as a developer-ecosystem leader who measures outcomes.",
+      "primary_platform": "linkedin",
+      "audience": "DevRel and developer-experience leaders, platform product and engineering leaders.",
+      "proof_that_counts": [
+        "A program you ran, with a real number",
+        "A framework that separates two things people conflate",
+        "A metric you use or would use (first-attempt success, integrations retained)",
+        "A failure and what fixed it"
+      ],
+      "in_scope": [
+        "DevRel strategy and org design",
+        "measuring developer adoption",
+        "ecosystem and partner programs",
+        "what DevRel owes engineering"
+      ],
+      "not_this": [
+        "generic leadership advice",
+        "career commentary",
+        "hot takes with no program behind them"
+      ]
+    },
+    {
+      "id": "agent-builder",
+      "statement": "Build credibility as a hands-on agent builder.",
+      "primary_platform": "x",
+      "audience": "Advanced AI prototypers and engineers shipping agents.",
+      "proof_that_counts": [
+        "Something you shipped: a repo, a demo clip, a screenshot",
+        "A result from a real run, with the number",
+        "What broke and how you fixed it",
+        "An exact prompt, config or setup someone can copy"
+      ],
+      "in_scope": [
+        "agent orchestration and control planes",
+        "Claude Code and MCP in practice",
+        "evals and judges in practice",
+        "agent observability"
+      ],
+      "not_this": [
+        "commentary on other people's launches without trying them",
+        "model-release hype",
+        "benchmarks you didn't run"
+      ]
+    },
+    {
+      "id": "agents-change-devrel",
+      "statement": "Build credibility on how agents change developer adoption.",
+      "primary_platform": "both",
+      "audience": "Both groups above: the bridge between DevRel leaders and agent builders.",
+      "proof_that_counts": [
+        "A test the reader can run this afternoon",
+        "A research read with a practical so-what",
+        "A concrete change to docs, onboarding or measurement for a non-human reader"
+      ],
+      "in_scope": [
+        "agents as a developer persona",
+        "docs legible to models, llms.txt, MCP tool definitions",
+        "measurement when the reader isn't human",
+        "the 'DevRel in the Agent Era' series"
+      ],
+      "not_this": [
+        "AI-will-change-everything takes",
+        "predictions without a test"
+      ]
+    }
+  ],
+  "off_objective_everywhere": [
+    "Crypto, tokens and markets",
+    "Politics and culture-war topics",
+    "Personal life, relationships, housing, legal matters",
+    "Dunking on people or companies",
+    "Reacting to news without adding proof"
+  ],
+  "scoring": {
+    "note": "The score is the Developer Trust filter in config/grader-prompt.md (0-10; Post unlocks at 8.0). Objectives are context for who's reading; they don't change the score."
+  }
+}

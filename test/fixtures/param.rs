@@ -1,0 +1,35 @@
+// Saved copy for tests: home-mixer/params/param.rs (values as synced 2026-08-12T04:09:22Z)
+use crate::params::param;
+
+param!(ShareViaCopyLinkWeight, f64, "ShareViaCopyLinkWeight", 20.0);
+param!(BidirectionalFollowReplyWeightBoost, f64, "BidirectionalFollowReplyWeightBoost", 15.0);
+param!(ReplyWeight, f64, "ReplyWeight", 5.0);
+param!(QuoteWeight, f64, "QuoteWeight", 5.0);
+param!(ShareViaDmWeight, f64, "ShareViaDmWeight", 5.0);
+param!(FollowAuthorWeight, f64, "FollowAuthorWeight", 4.0);
+param!(ShareWeight, f64, "ShareWeight", 2.0);
+param!(RetweetWeight, f64, "RetweetWeight", 1.0);
+param!(FavoriteWeight, f64, "FavoriteWeight", 0.5);
+param!(ClickWeight, f64, "ClickWeight", 0.4);
+param!(OpenLinkWeight, f64, "OpenLinkWeight", 0.2);
+param!(PhotoExpandWeight, f64, "PhotoExpandWeight", 0.05);
+param!(VideoOpenWeight, f64, "VideoOpenWeight", 0.05);
+param!(VqvWeight, f64, "VqvWeight", 0.05);
+param!(ContDwellTimeWeight, f64, "ContDwellTimeWeight", 0.004);
+param!(ProfileClickWeight, f64, "ProfileClickWeight", 0.0);
+param!(DwellWeight, f64, "DwellWeight", 0.0);
+param!(NotDwelledWeight, f64, "NotDwelledWeight", -0.02);
+param!(BlockAuthorWeight, f64, "BlockAuthorWeight", -31.2);
+param!(NotInterestedWeight, f64, "NotInterestedWeight", -43.2);
+param!(MuteAuthorWeight, f64, "MuteAuthorWeight", -58.8);
+param!(ReportWeight, f64, "ReportWeight", -234.0);
+param!(AuthorDiversityDecay, f64, "AuthorDiversityDecay", 0.5);
+param!(AuthorDiversityFloor, f64, "AuthorDiversityFloor", 0.25);
+param!(OonWeightFactor, f64, "OonWeightFactor", 0.75);
+param!(TopicOonWeightFactor, f64, "TopicOonWeightFactor", 0.5);
+param!(ColdStartImpressionThreshold, u64, "ColdStartImpressionThreshold", 1000);
+param!(ColdStartFollowerCap, u64, "ColdStartFollowerCap", 1000);
+param!(ColdStartMaxPostAgeSecs, u64, "ColdStartMaxPostAgeSecs", 86400);
+param!(MinVideoDurationMs, u64, "MinVideoDurationMs", 10000);
+param!(VMRankerDppTheta, f64, "VMRankerDppTheta", 0.65);
+param!(AgeFilterHours, u64, "AgeFilterHours", 48);

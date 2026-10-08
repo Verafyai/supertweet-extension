@@ -1,0 +1,78 @@
+<!doctype html>
+<html data-supertweet-platform="x"><head><meta charset="utf-8"><title>Supertweet harness</title>
+<style>body{font:15px system-ui;margin:40px;background:#fff}#col{max-width:560px;margin:0 auto;border:1px solid #ddd;padding:12px}
+[role=textbox]{min-height:60px;border:1px solid #ccc;padding:8px;outline:none}
+article{border:1px solid #eee;padding:8px;margin:6px 0;width:560px}
+button{margin-top:8px;padding:8px 16px;border-radius:999px;background:#1d9bf0;color:#fff;border:0}</style></head>
+<body>
+<pre id="log"></pre>
+<script>
+// Mock of the bits of X that Supertweet reads. Route by path, like X does.
+const FIX = {
+  '101': ['demo_dev', '2026-01-02T00:00:00Z', 'TIL Postgres ignores a partial index if the query predicate does not match exactly. Rewrote it and p99 dropped from 340ms to 12ms.'],
+  '102': ['demo_dev', '2026-02-02T00:00:00Z', 'Some people are clowns for still writing tests by hand.'],
+  '103': ['someoneelse', '2026-02-03T00:00:00Z', 'Some people are clowns, says someone else.'],
+  '104': ['demo_dev', '2026-03-02T00:00:00Z', 'Shipped a Brave extension that grades my X drafts on-device. The trick: regexes plus a small lexicon instead of an LLM, so it re-scores on every keystroke in under 1ms.'],
+  '105': ['demo_team', '2026-03-03T00:00:00Z', 'This is huge <img alt="🚀" src=""><img alt="🚀" src=""><img alt="🔥" src="">'],
+};
+const article = (id, focal) => {
+  const [h, d, t] = FIX[id];
+  return `<article data-testid="tweet" id="t${id}">
+    <div data-testid="User-Name"><a href="/${h}">${h}</a> <a href="/${h}/status/${id}"><time datetime="${d}">d</time></a></div>
+    ${focal ? '<div data-testid="caret" role="button">…</div>' : ''}
+    <div><div data-testid="tweetText">${t}</div></div>
+    <div role="group"><button data-testid="reply" aria-label="${M[id][2]} Replies. Reply"></button><button data-testid="retweet" aria-label="${M[id][3]} reposts. Repost"></button><button data-testid="like" aria-label="${M[id][1]} Likes. Like"></button><a href="/${h}/status/${id}/analytics" aria-label="${M[id][0]} views. View post analytics"></a></div></article>`;
+};
+// Reach per post: [views, likes, replies, reposts]. 102 (a kill) outreached the Sweet ones.
+const M = { '101': ['1,200', 14, 3, 1], '102': ['8,400', 40, 22, 5], '103': ['90', 1, 0, 0], '104': ['2,100', 30, 6, 2], '105': ['600', 5, 1, 0] };
+const path = location.pathname;
+let html = '<a data-testid="AppTabBar_Profile_Link" href="/demo_dev">Profile</a>';
+const st = path.match(/\/status\/(\d+)/);
+if (st) html += article(st[1], true);
+else html += '<div id="timeline">' + Object.keys(FIX).map((id) => article(id)).join('') + '</div>';
+if (!st && !/with_replies/.test(path)) html += `<div id="col"><div class="composer">
+  <div contenteditable="true" role="textbox" data-testid="tweetTextarea_0" style="white-space:pre-wrap"></div>
+  <div id="media-slot"></div>
+  <input type="file" data-testid="fileInput" accept="image/*" style="display:none">
+  <button data-testid="tweetButtonInline">Post</button></div></div>`;
+document.body.insertAdjacentHTML('afterbegin', html);
+const log = (s) => (document.getElementById('log').textContent += s + '\n');
+// X's media picker: count opens (headless has no file dialog).
+window.__pickerOpened = 0;
+document.addEventListener('click', (e) => { if (e.target.matches && e.target.matches('input[data-testid=fileInput]')) { e.preventDefault(); window.__pickerOpened++; } }, true);
+// Like X's editor (Draft.js): it handles paste itself and replaces the selection.
+window.__pastes = 0;
+document.addEventListener('paste', (e) => {
+  const ed = e.target.closest && e.target.closest('[data-testid=tweetTextarea_0]');
+  if (!ed) return;
+  e.preventDefault(); window.__pastes++;
+  ed.textContent = e.clipboardData.getData('text/plain');
+  ed.dispatchEvent(new InputEvent('input', { bubbles: true }));
+});
+document.addEventListener('click', (e) => {
+  if (e.target.closest('[data-testid=tweetButtonInline]')) { log('POSTED'); if (!window.__failNextPost) document.querySelector('[data-testid=tweetTextarea_0]').textContent = ''; }
+  if (e.target.closest('[data-testid=caret]')) document.body.insertAdjacentHTML('beforeend', '<div role="menuitem" id="mi">Delete</div>');
+  if (e.target.id === 'mi') { e.target.remove(); document.body.insertAdjacentHTML('beforeend', '<button data-testid="confirmationSheetConfirm">Delete</button>'); }
+  if (e.target.closest('[data-testid=confirmationSheetConfirm]')) { e.target.remove(); document.querySelector('article').remove(); log('DELETED'); }
+});
+</script>
+<script src="/test/fixtures/chrome-stub.js"></script>
+<script src="/src/scorer.js"></script>
+<script src="/src/checks.js"></script>
+<script src="/src/tmi.js"></script>
+<script src="/src/objectives.js"></script>
+<script src="/src/x-linter.js"></script>
+<script src="/src/settings.js"></script>
+<script src="/src/steps.js"></script>
+<script src="/src/critique.js"></script>
+<script src="/src/panel.js"></script>
+<script src="/src/ui.js"></script>
+<script src="/src/adapters/x.js"></script>
+<script src="/src/adapters/linkedin.selectors.js"></script>
+<script src="/src/adapters/linkedin.js"></script>
+<script src="/src/platform.js"></script>
+<script src="/src/audience.js"></script>
+<script src="/src/content.js"></script>
+<script src="/src/history.js"></script>
+<script src="/src/past-posts.js"></script>
+</body></html>

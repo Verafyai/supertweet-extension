@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Score panel fixtures</title>
+<style>
+@font-face{font-family:"Bricolage Grotesque";font-weight:400;src:url(/fonts/BricolageGrotesque-400.woff2) format("woff2")}
+@font-face{font-family:"Bricolage Grotesque";font-weight:600;src:url(/fonts/BricolageGrotesque-600.woff2) format("woff2")}
+@font-face{font-family:"Bricolage Grotesque";font-weight:700;src:url(/fonts/BricolageGrotesque-700.woff2) format("woff2")}
+@font-face{font-family:"Bricolage Grotesque";font-weight:800;src:url(/fonts/BricolageGrotesque-800.woff2) format("woff2")}
+body{margin:0;background:#0A0E13}
+.demo{display:flex;gap:40px;flex-wrap:wrap;padding:32px 20px;justify-content:center}
+.demo > div{width:440px}
+</style>
+<style id="panel-css"></style>
+</head>
+<body>
+<!-- The reference file's two fixtures, rendered by src/panel.js (the ported component). -->
+<div class="demo">
+  <div class="st-scope" id="a"></div>
+  <div class="st-scope" id="b"></div>
+</div>
+<script src="/src/objectives.js"></script>
+<script src="/src/steps.js"></script>
+<script src="/src/panel.js"></script>
+<script>
+document.getElementById('panel-css').textContent = SupertweetPanel.CSS;
+const OBJ=[{id:'agent-builder',label:'Hands-on agent builder'},{id:'ecosystem-leader',label:'Ecosystem leader who measures'},{id:'agents-change-devrel',label:'How agents change DevRel'}];
+const DRAFT=`Letting AI write everything isn't great.
+
+So I built a real-time linter that grades my drafts against a fixed set of objectives while I type. It flags what's missing, and I fix it myself.
+
+The human corrects; the AI doesn't produce it all.`;
+const A={platform:'x',objectives:OBJ,objectiveId:'agent-builder',score:5,gate:8,why:'True, but it shows no work a developer could check.',rubric:{proof:2,audience:1,onlyMe:2},flags:[],algorithmFit:.5,draft:DRAFT,charLimit:280,attachments:[],
+ steps:[
+  {type:'attach_proof',rubricKey:'proof',title:'Show the thing',why:'A screenshot of the linter grading this exact draft is the proof. It also costs no characters.',points:2,attachLabel:'Attach screenshot'},
+  {type:'ask_fact',rubricKey:'onlyMe',title:'Add a real-run number',why:'Only you know how many drafts it has flagged. That number is what makes it yours.',points:1,question:'How many drafts has it flagged so far?',placeholderExample:'e.g. 31',lineBefore:"It flags what's missing, and I fix it myself.",lineAfter:"It's flagged {answer} drafts so far. I fix each one myself."},
+  {type:'line_edit',rubricKey:'audience',title:'Say who it\'s for',why:'Speak to builders directly, and save characters doing it.',points:1,lineBefore:"The human corrects; the AI doesn't produce it all.",lineAfter:"Builders: you write, the AI checks."}
+ ]};
+const B=JSON.parse(JSON.stringify(A)); B.score=9; B.why='A specific learning from building, with the work shown.'; B.rubric={proof:4,audience:2,onlyMe:3}; B.steps=[]; B.algorithmFit=6.1;
+window.__applied = [];
+window.FIX = { A, B };
+const rerender=(id,st)=>SupertweetPanel.renderPanel(document.getElementById(id),st,null,{
+  attach:()=>{window.__attached=(window.__attached||0)+1},
+  apply:(s,next)=>{window.__applied.push({before:st.draft,after:next});st.draft=next;s.done=true;rerender(id,st)},
+});
+rerender('a',A); rerender('b',B);
+</script>
+</body>
+</html>
